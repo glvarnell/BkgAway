@@ -1,0 +1,2 @@
+# Add to a CUDA venv alongside requirements-cuda.txt when building the frozen app.
+pyinstaller>=6.0
