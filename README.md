@@ -77,6 +77,15 @@ pip install -r requirements-cuda.txt
 pip install -r packaging/requirements-build-cuda.txt
 ./packaging/build_nvidia.sh
 ```
+to re-build
+```bash
+source .venv-cuda/bin/activate
+./packaging/build_nvidia.sh
+```
+or
+```bash
+PYINSTALLER=.venv/bin/pyinstaller ./packaging/build_nvidia.sh
+```
 
 **Run the app:** `./dist/rm-bkg-cuda/rm-bkg-cuda`
 
