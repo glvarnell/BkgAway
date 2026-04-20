@@ -62,10 +62,63 @@ python -m rm_bkg
 Outputs are `{original_stem}_nobg.png` in the output folder. Optional **Save mask PNG**
 writes `{stem}_nobg_mask.png` from the alpha channel.
 
-## Packaging
+## Standalone NVIDIA build (Linux, PyInstaller)
 
-Later you can freeze separate **CUDA** and **ROCm** (and optional **CPU**) bundles
-with PyInstaller or Nuitka; each bundle must ship the matching PyTorch wheel.
-See [`packaging/pyinstaller_example.sh`](packaging/pyinstaller_example.sh) for a
-minimal starting command (expect to add `--collect-all` / `--hidden-import` for
-your torch stack).
+The CUDA bundle is a **onedir** tree (not a single file): easier for PyTorch and
+Qt. Build on **Linux x86_64** in a venv that already has **CUDA PyTorch** from
+`requirements-cuda.txt` (the wheel you install here is what gets frozen).
+
+```bash
+cd /path/to/rm_bkg
+python3 -m venv .venv-cuda
+source .venv-cuda/bin/activate
+pip install -U pip
+pip install -r requirements-cuda.txt
+pip install -r packaging/requirements-build-cuda.txt
+./packaging/build_nvidia.sh
+```
+
+**Run the app:** `./dist/rm-bkg-cuda/rm-bkg-cuda`
+
+**Ship:** zip or tarball the whole `dist/rm-bkg-cuda/` directory.
+
+**Target machine:** needs a **compatible NVIDIA driver** for the CUDA version
+bundled with your PyTorch wheel, and roughly compatible **glibc** (build on an
+older distro if you need broader compatibility). First run still downloads
+model weights to `~/.transparent-background/` unless you ship that cache.
+
+Spec file: [`packaging/rm_bkg_cuda.spec`](packaging/rm_bkg_cuda.spec). If the
+frozen app fails with a missing module, add it to `hiddenimports` or extend
+`packages` in the spec and rebuild.
+
+## Standalone CPU build (Linux, PyInstaller)
+
+Same **onedir** layout as the CUDA build, but use **CPU PyTorch** from
+`requirements-cpu.txt` so the bundle does **not** ship the NVIDIA CUDA stack
+(smaller than `rm-bkg-cuda`, still large because of Qt + torch CPU + vision deps).
+
+```bash
+cd /path/to/rm_bkg
+python3 -m venv .venv-cpu
+source .venv-cpu/bin/activate
+pip install -U pip
+pip install -r requirements-cpu.txt
+pip install -r packaging/requirements-build-cpu.txt
+./packaging/build_cpu.sh
+```
+
+**Run the app:** `./dist/rm-bkg-cpu/rm-bkg-cpu`
+
+**Ship:** the whole `dist/rm-bkg-cpu/` directory (including `_internal/`).
+
+Spec: [`packaging/rm_bkg_cpu.spec`](packaging/rm_bkg_cpu.spec).
+
+**Smaller bundles (already in the specs):** PySide6 is **not** `collect_all`’d
+(use the default hook instead), **CPU** builds omit **Triton** native libs, both
+specs **strip** ELF binaries where possible, and a few **dev-only** top-level
+packages are listed under `excludes`. Further shrinking means dropping
+`collect_all` targets and fixing missing-module errors as they appear, or
+shipping a venv instead of PyInstaller.
+
+**ROCm** frozen build is not scripted here; copy the CPU or CUDA spec and adjust
+the venv (ROCm `torch` wheel) if you need it.
