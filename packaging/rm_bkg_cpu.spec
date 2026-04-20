@@ -22,6 +22,7 @@ hiddenimports: list = [
     "rm_bkg.remover_worker",
     "rm_bkg.drop_widgets",
     "rm_bkg.images",
+    "rm_bkg.preview_widgets",
 ]
 
 # PySide6: do not collect_all — the PyInstaller hook pulls a smaller Qt set than collect_all.

@@ -22,6 +22,7 @@ hiddenimports: list = [
     "rm_bkg.remover_worker",
     "rm_bkg.drop_widgets",
     "rm_bkg.images",
+    "rm_bkg.preview_widgets",
 ]
 
 packages = [

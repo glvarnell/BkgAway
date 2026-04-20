@@ -29,6 +29,7 @@ from PySide6.QtWidgets import (
 
 from rm_bkg.drop_widgets import ImageDropLabel
 from rm_bkg.images import composite_on_checkerboard, load_image_rgb, pil_to_qimage_rgb
+from rm_bkg.preview_widgets import ZoomPreviewView
 from rm_bkg.remover_worker import RemoveBackgroundThread, SUPPORTED_SUFFIXES
 
 
@@ -40,8 +41,6 @@ class MainWindow(QMainWindow):
 
         self._input_paths: list[Path] = []
         self._thread: RemoveBackgroundThread | None = None
-        self._full_pix_orig: QPixmap | None = None
-        self._full_pix_result: QPixmap | None = None
         self._run_timer = QElapsedTimer()
         self._current_file = ""
         self._device_line = ""
@@ -114,21 +113,23 @@ class MainWindow(QMainWindow):
         left = QWidget()
         lv = QVBoxLayout(left)
         lv.addWidget(QLabel("Original"))
-        self._preview_orig = ImageDropLabel()
-        self._preview_orig.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._preview_orig = ZoomPreviewView(accept_file_drops=True)
         self._preview_orig.setMinimumHeight(320)
-        self._preview_orig.setStyleSheet("background: palette(mid);")
-        self._preview_orig.setToolTip("Drag image files or folders here…")
+        self._preview_orig.setToolTip(
+            "Scroll wheel to zoom; after zooming, drag to pan. Double-click to fit. "
+            "Drag images or folders here…"
+        )
         self._preview_orig.paths_dropped.connect(self._on_paths_dropped)
         lv.addWidget(self._preview_orig)
 
         right = QWidget()
         rv = QVBoxLayout(right)
         rv.addWidget(QLabel("Result (checkerboard = transparent)"))
-        self._preview_result = QLabel()
-        self._preview_result.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._preview_result = ZoomPreviewView(accept_file_drops=False)
         self._preview_result.setMinimumHeight(320)
-        self._preview_result.setStyleSheet("background: palette(mid);")
+        self._preview_result.setToolTip(
+            "Scroll wheel to zoom; after zooming, drag to pan. Double-click to fit."
+        )
         rv.addWidget(self._preview_result)
 
         splitter.addWidget(left)
@@ -215,27 +216,19 @@ class MainWindow(QMainWindow):
 
     def _preview_input_selection(self) -> None:
         """Show the original image as soon as input is chosen; clear result until Run."""
-        self._full_pix_result = None
-        self._preview_result.clear()
-        self._preview_result.setText("(Run to see result)")
+        self._preview_result.show_placeholder("(Run to see result)")
 
         if not self._input_paths:
-            self._full_pix_orig = None
-            self._preview_orig.clear()
-            self._preview_orig.setText("(No image selected)")
+            self._preview_orig.show_placeholder("(No image selected)")
             return
 
-        self._preview_orig.clear()
-        self._preview_orig.setText("")
         path = self._input_paths[0]
         try:
             pil = load_image_rgb(str(path))
-            self._full_pix_orig = QPixmap.fromImage(pil_to_qimage_rgb(pil))
-            self._apply_preview(self._preview_orig, self._full_pix_orig)
+            pm = QPixmap.fromImage(pil_to_qimage_rgb(pil))
+            self._preview_orig.set_full_pixmap(pm)
         except Exception as e:
-            self._full_pix_orig = None
-            self._preview_orig.clear()
-            self._preview_orig.setText(f"Could not load preview:\n{e}")
+            self._preview_orig.show_placeholder(f"Could not load preview:\n{e}")
 
     def _output_dir(self) -> Path | None:
         t = self._out_edit.text().strip()
@@ -318,16 +311,12 @@ class MainWindow(QMainWindow):
 
     def _on_file_finished(self, _out_path: str, orig, rgba) -> None:
         if isinstance(orig, Image.Image):
-            po = pil_to_qimage_rgb(orig)
-            self._full_pix_orig = QPixmap.fromImage(po)
-            self._preview_orig.setText("")
-            self._apply_preview(self._preview_orig, self._full_pix_orig)
+            pm = QPixmap.fromImage(pil_to_qimage_rgb(orig))
+            self._preview_orig.set_full_pixmap(pm)
         if isinstance(rgba, Image.Image):
             flat = composite_on_checkerboard(rgba)
-            pr = pil_to_qimage_rgb(flat)
-            self._full_pix_result = QPixmap.fromImage(pr)
-            self._preview_result.setText("")
-            self._apply_preview(self._preview_result, self._full_pix_result)
+            pm = QPixmap.fromImage(pil_to_qimage_rgb(flat))
+            self._preview_result.set_full_pixmap(pm)
 
     def _append_log(self, line: str) -> None:
         self._log.appendPlainText(line)
@@ -346,26 +335,6 @@ class MainWindow(QMainWindow):
         self._device_line = ""
         self._status_left.setText("Idle")
         self._act_stop.setEnabled(False)
-
-    def _apply_preview(self, label: QLabel, full: QPixmap) -> None:
-        label.setText("")
-        sz = label.size()
-        w, h = max(1, sz.width()), max(1, sz.height())
-        label.setPixmap(
-            full.scaled(
-                w,
-                h,
-                Qt.AspectRatioMode.KeepAspectRatio,
-                Qt.TransformationMode.SmoothTransformation,
-            )
-        )
-
-    def resizeEvent(self, event) -> None:
-        super().resizeEvent(event)
-        if self._full_pix_orig:
-            self._apply_preview(self._preview_orig, self._full_pix_orig)
-        if self._full_pix_result:
-            self._apply_preview(self._preview_result, self._full_pix_result)
 
     def closeEvent(self, event: QCloseEvent) -> None:
         if self._thread and self._thread.isRunning():
