@@ -25,7 +25,6 @@ hiddenimports: list = [
 ]
 
 packages = [
-    "PySide6",
     "torch",
     "torchvision",
     "transparent_background",
@@ -60,6 +59,14 @@ for lib in ("torch", "nvidia", "triton"):
     except Exception:
         pass
 
+excludes = [
+    "tkinter",
+    "IPython",
+    "jupyter",
+    "notebook",
+    "pytest",
+]
+
 a = Analysis(
     [str(entry)],
     pathex=[str(repo_root)],
@@ -69,7 +76,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=excludes,
     noarchive=False,
     optimize=0,
 )
@@ -84,7 +91,7 @@ exe = EXE(
     name="rm-bkg-cuda",
     debug=False,
     bootloader_ignore_signals=False,
-    strip=False,
+    strip=True,
     upx=False,
     console=False,
     disable_windowed_traceback=False,
@@ -98,7 +105,7 @@ coll = COLLECT(
     exe,
     a.binaries,
     a.datas,
-    strip=False,
+    strip=True,
     upx=False,
     upx_exclude=[],
     name="rm-bkg-cuda",

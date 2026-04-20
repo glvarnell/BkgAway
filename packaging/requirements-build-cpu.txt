@@ -1,0 +1,2 @@
+# Add to a CPU venv alongside requirements-cpu.txt when building the frozen app.
+pyinstaller>=6.0
