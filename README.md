@@ -17,13 +17,13 @@ that file when redistributing frozen builds.
 
 ## Setup
 
-Use **Python 3.12** (pinned in [`.tool-versions`](.tool-versions) for [asdf](https://asdf-vm.com/)).
-Avoid 3.14+ for this stack; PyTorch / PySide6 / PyInstaller are more reliable on 3.12.
+Use **Python 3.13** (pinned in [`.tool-versions`](.tool-versions) for [asdf](https://asdf-vm.com/)).
+Avoid 3.14+ for this stack; create venvs with the pinned interpreter, not system Python.
 
 ```bash
 cd /path/to/rm_bkg
-asdf install          # if needed: installs python 3.12.2 from .tool-versions
-python -V             # expect 3.12.2
+asdf install          # if needed: installs python 3.13.0 from .tool-versions
+python -V             # expect 3.13.0
 python -m venv .venv
 source .venv/bin/activate
 ```
