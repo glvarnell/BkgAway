@@ -22,11 +22,13 @@ from PySide6.QtWidgets import (
     QPushButton,
     QSplitter,
     QStatusBar,
+    QTabWidget,
     QToolBar,
     QVBoxLayout,
     QWidget,
 )
 
+from rm_bkg import CHANGELOG, __version__
 from rm_bkg.drop_widgets import ImageDropLabel
 from rm_bkg.images import composite_on_checkerboard, load_image_rgb, pil_to_qimage_rgb
 from rm_bkg.preview_widgets import ZoomPreviewView
@@ -36,7 +38,7 @@ from rm_bkg.remover_worker import RemoveBackgroundThread, SUPPORTED_SUFFIXES
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
-        self.setWindowTitle("Remove background")
+        self.setWindowTitle(f"BkgAway {__version__}")
         self.resize(1100, 720)
 
         self._input_paths: list[Path] = []
@@ -76,9 +78,11 @@ class MainWindow(QMainWindow):
         bar.addAction(act_reveal)
 
     def _build_ui(self) -> None:
-        central = QWidget()
-        self.setCentralWidget(central)
-        layout = QVBoxLayout(central)
+        tabs = QTabWidget()
+        self.setCentralWidget(tabs)
+
+        work = QWidget()
+        layout = QVBoxLayout(work)
 
         io = QGroupBox("Input / output")
         iog = QGridLayout(io)
@@ -103,10 +107,23 @@ class MainWindow(QMainWindow):
         layout.addWidget(io)
 
         opt = QGroupBox("Options")
-        og = QHBoxLayout(opt)
+        og = QVBoxLayout(opt)
+        row1 = QHBoxLayout()
         self._save_mask = QCheckBox("Save mask PNG (_nobg_mask.png)")
-        og.addWidget(self._save_mask)
-        og.addStretch()
+        row1.addWidget(self._save_mask)
+        self._btn_redownload_weights = QPushButton("Re-download weights…")
+        self._btn_redownload_weights.setToolTip(
+            "Delete cached model files so the next Run downloads them again."
+        )
+        self._btn_redownload_weights.clicked.connect(self._on_redownload_weights)
+        row1.addWidget(self._btn_redownload_weights)
+        row1.addStretch()
+        og.addLayout(row1)
+        self._weights_path_label = QLabel()
+        self._weights_path_label.setWordWrap(True)
+        self._weights_path_label.setStyleSheet("color: palette(mid); font-size: 11px;")
+        self._refresh_weights_path_label()
+        og.addWidget(self._weights_path_label)
         layout.addWidget(opt)
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -150,10 +167,73 @@ class MainWindow(QMainWindow):
         lg.addWidget(self._log)
         layout.addWidget(log)
 
+        tabs.addTab(work, "Remove")
+        tabs.addTab(self._build_about_tab(), "About")
+
         sb = QStatusBar()
         self.setStatusBar(sb)
         self._status_left = QLabel("")
         sb.addWidget(self._status_left, stretch=1)
+
+    def _build_about_tab(self) -> QWidget:
+        from rm_bkg.paths import load_third_party_notices
+
+        page = QWidget()
+        layout = QVBoxLayout(page)
+
+        title = QLabel("BkgAway")
+        title_font = title.font()
+        title_font.setPointSize(title_font.pointSize() + 4)
+        title_font.setBold(True)
+        title.setFont(title_font)
+        layout.addWidget(title)
+
+        layout.addWidget(QLabel(f"Version {__version__}"))
+        blurb = QLabel(
+            "BkgAway removes image backgrounds with transparent-background "
+            "(InSPyReNet), matching the ComfyUI Inspyrenet Rembg path.\n\n"
+            "Uses transparent-background, InSPyReNet, PySide6/Qt, PyTorch, "
+            "Pillow, and NumPy. See Third-party notices for details."
+        )
+        blurb.setWordWrap(True)
+        layout.addWidget(blurb)
+
+        about_tabs = QTabWidget()
+        changelog = QPlainTextEdit()
+        changelog.setReadOnly(True)
+        changelog.setPlainText(CHANGELOG.strip() + "\n")
+        about_tabs.addTab(changelog, "Changelog")
+
+        notices = QPlainTextEdit()
+        notices.setReadOnly(True)
+        notices.setPlainText(load_third_party_notices().strip() + "\n")
+        about_tabs.addTab(notices, "Third-party notices")
+        layout.addWidget(about_tabs, stretch=1)
+        return page
+
+    def _refresh_weights_path_label(self) -> None:
+        from rm_bkg.paths import transparent_background_cache_dir
+
+        self._weights_path_label.setText(
+            "Model cache: " + str(transparent_background_cache_dir())
+        )
+
+    def _on_redownload_weights(self) -> None:
+        from rm_bkg.paths import clear_transparent_background_cache
+
+        r = QMessageBox.question(
+            self,
+            "Re-download weights?",
+            "Delete the cached checkpoint (and local config copy) for transparent-background?\n\n"
+            "The next Run will download the model again.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if r != QMessageBox.StandardButton.Yes:
+            return
+        _ok, msg = clear_transparent_background_cache()
+        QMessageBox.information(self, "Weights cache", msg)
+        self._refresh_weights_path_label()
 
     def _browse_output_path(self) -> None:
         path = QFileDialog.getExistingDirectory(self, "Output folder")

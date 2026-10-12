@@ -13,7 +13,7 @@
 #   # or:
 #   .venv-cpu-build/bin/pyinstaller --noconfirm --clean packaging/rm_bkg_cpu.spec
 #
-# Output: dist/rm-bkg-cpu/  (run dist/rm-bkg-cpu/rm-bkg-cpu)
+# Output: dist/bkgaway-cpu/  (run dist/bkgaway-cpu/bkgaway-cpu)
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"

@@ -7,7 +7,7 @@
 #   pip install -r requirements-cuda.txt pyinstaller
 #   ./packaging/build_nvidia.sh
 #
-# Output: dist/rm-bkg-cuda/  (run dist/rm-bkg-cuda/rm-bkg-cuda)
+# Output: dist/bkgaway-cuda/  (run dist/bkgaway-cuda/bkgaway-cuda)
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"

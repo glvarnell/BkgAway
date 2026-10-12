@@ -13,7 +13,9 @@ spec_path = Path(SPEC)
 repo_root = spec_path.parent.parent
 entry = repo_root / "packaging" / "entrypoint_gui.py"
 
-datas: list = []
+datas: list = [
+    (str(repo_root / "THIRD_PARTY_NOTICES.md"), "."),
+]
 binaries: list = []
 hiddenimports: list = [
     "rm_bkg",
@@ -23,6 +25,7 @@ hiddenimports: list = [
     "rm_bkg.drop_widgets",
     "rm_bkg.images",
     "rm_bkg.preview_widgets",
+    "rm_bkg.paths",
 ]
 
 # PySide6: do not collect_all — the PyInstaller hook pulls a smaller Qt set than collect_all.
@@ -92,7 +95,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name="rm-bkg-cpu",
+    name="bkgaway-cpu",
     debug=False,
     bootloader_ignore_signals=False,
     strip=True,
@@ -112,5 +115,5 @@ coll = COLLECT(
     strip=True,
     upx=False,
     upx_exclude=[],
-    name="rm-bkg-cpu",
+    name="bkgaway-cpu",
 )
