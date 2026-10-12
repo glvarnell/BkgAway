@@ -1,5 +1,5 @@
 -r requirements-common.txt
-# Adjust cu124 if your driver needs another CUDA wheel from https://pytorch.org/get-started/locally/
---extra-index-url https://download.pytorch.org/whl/cu124
+# Adjust cu130 if your driver needs another CUDA wheel from https://pytorch.org/get-started/locally/
+--extra-index-url https://download.pytorch.org/whl/cu130
 torch>=2.2.0
 torchvision>=0.17.0

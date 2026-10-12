@@ -28,7 +28,7 @@ python -m venv .venv
 source .venv/bin/activate
 ```
 
-**NVIDIA (CUDA)** — edit `cu124` in `requirements-cuda.txt` if needed to match [PyTorch](https://pytorch.org/get-started/locally/).
+**NVIDIA (CUDA)** — `requirements-cuda.txt` uses the `cu130` wheel index; edit if needed to match [PyTorch](https://pytorch.org/get-started/locally/).
 
 ```bash
 pip install -U pip
@@ -79,8 +79,9 @@ python -m rm_bkg
 1. **Open…** or **Open folder…** for batch processing.  
 2. Choose an **output folder** (defaults to the folder when you used “Open folder…”).  
 3. **Run** — progress and logs update in the window; previews show original vs result
-   (checkerboard indicates transparency). **Stop** finishes after the current file
-   (safe interruption between images).
+   (checkerboard indicates transparency). **Stop** finishes after the current image
+   (inference cannot be aborted mid-forward). Options include recursive folders, EXIF
+   orientation, and PNG compress level.
 
 Outputs are `{original_stem}_nobg.png` in the output folder. Optional **Save mask PNG**
 writes `{stem}_nobg_mask.png` from the alpha channel.

@@ -14,7 +14,7 @@ from PySide6.QtGui import (
 )
 from PySide6.QtWidgets import QGraphicsPixmapItem, QGraphicsScene, QGraphicsTextItem, QGraphicsView
 
-from rm_bkg.drop_widgets import paths_from_drop_mime
+from rm_bkg.drop_widgets import drop_mime_may_accept, paths_from_drop_mime
 
 
 class ZoomPreviewView(QGraphicsView):
@@ -22,9 +22,16 @@ class ZoomPreviewView(QGraphicsView):
 
     paths_dropped = Signal(list)
 
-    def __init__(self, accept_file_drops: bool = False, parent=None) -> None:
+    def __init__(
+        self,
+        accept_file_drops: bool = False,
+        *,
+        recursive_drops: bool = False,
+        parent=None,
+    ) -> None:
         super().__init__(parent)
         self._accept_file_drops = accept_file_drops
+        self._recursive_drops = recursive_drops
         self._manual_zoom = False
         self._pix_item = QGraphicsPixmapItem()
         self._text_item = QGraphicsTextItem()
@@ -131,11 +138,14 @@ class ZoomPreviewView(QGraphicsView):
         self.scale(factor, factor)
         self._refresh_drag_mode()
 
+    def set_recursive_drops(self, recursive: bool) -> None:
+        self._recursive_drops = recursive
+
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
         if not self._accept_file_drops or not event.mimeData().hasUrls():
             event.ignore()
             return
-        if paths_from_drop_mime(event.mimeData().urls()):
+        if drop_mime_may_accept(event.mimeData().urls()):
             event.acceptProposedAction()
         else:
             event.ignore()
@@ -144,7 +154,7 @@ class ZoomPreviewView(QGraphicsView):
         if not self._accept_file_drops:
             event.ignore()
             return
-        if paths_from_drop_mime(event.mimeData().urls()):
+        if drop_mime_may_accept(event.mimeData().urls()):
             event.acceptProposedAction()
         else:
             event.ignore()
@@ -153,7 +163,10 @@ class ZoomPreviewView(QGraphicsView):
         if not self._accept_file_drops:
             event.ignore()
             return
-        paths = paths_from_drop_mime(event.mimeData().urls())
+        paths = paths_from_drop_mime(
+            event.mimeData().urls(),
+            recursive=self._recursive_drops,
+        )
         if paths:
             self.paths_dropped.emit(paths)
             event.acceptProposedAction()

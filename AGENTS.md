@@ -47,7 +47,7 @@ If you add imports that PyInstaller misses, extend **`hiddenimports`** (and if n
 
 ## Conventions when editing
 
-1. **Keep inference off the GUI thread** — all `Remover` / file work stays in `RemoveBackgroundThread` (`remover_worker.py`). UI updates via Qt signals only.
+1. **Keep inference off the GUI thread** — all `Remover` / file work stays in `RemoveBackgroundThread` (`remover_worker.py`). Downscale + checkerboard previews in the worker; UI updates via Qt signals only. Reuse `get_cached_remover()` across Runs; call `clear_cached_remover()` when clearing weights.
 2. **Match existing style** — minimal diffs; no unrelated refactors or new docs unless asked.
 3. **Dependencies** — any new third-party import must be reflected in `requirements-common.txt` or the appropriate torch file; bump README if user-facing behavior changes.
 4. **Outputs** — PNG naming is `{stem}_nobg.png`; optional mask `{stem}_nobg_mask.png` (see `remover_worker.py`).

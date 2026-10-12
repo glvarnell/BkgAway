@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
 import shutil
 import sys
+import urllib.request
+from collections.abc import Callable
 from pathlib import Path
 
 _NOTICES_FALLBACK = """\
@@ -107,3 +110,124 @@ def clear_transparent_background_cache() -> tuple[bool, str]:
 
     shutil.rmtree(cache)
     return True, f"Removed:\n{cache}"
+
+
+def _package_config_path() -> Path:
+    import transparent_background
+
+    return Path(transparent_background.__file__).resolve().parent / "config.yaml"
+
+
+def _load_mode_meta(mode: str = "base") -> dict:
+    """Read checkpoint URL/name/md5 for *mode* from the user or package config."""
+    import yaml
+
+    ensure_transparent_background_home()
+    cache = transparent_background_cache_dir()
+    cache.mkdir(parents=True, exist_ok=True)
+    user_cfg = cache / "config.yaml"
+    if not user_cfg.is_file():
+        shutil.copy(_package_config_path(), user_cfg)
+
+    with user_cfg.open(encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+    if mode not in data:
+        raise KeyError(f"Unknown transparent-background mode: {mode!r}")
+    meta = data[mode]
+    return {
+        "url": meta["url"],
+        "md5": meta.get("md5"),
+        "ckpt_name": meta["ckpt_name"],
+    }
+
+
+def _file_md5(path: Path, chunk: int = 1024 * 1024) -> str:
+    h = hashlib.md5()
+    with path.open("rb") as f:
+        while True:
+            block = f.read(chunk)
+            if not block:
+                break
+            h.update(block)
+    return h.hexdigest()
+
+
+def checkpoint_needs_download(mode: str = "base") -> bool:
+    """True if the checkpoint is missing or its MD5 does not match config."""
+    meta = _load_mode_meta(mode)
+    dest = transparent_background_cache_dir() / meta["ckpt_name"]
+    if not dest.is_file():
+        return True
+    expected = meta.get("md5")
+    if expected is None:
+        return False
+    return _file_md5(dest) != expected
+
+
+def ensure_checkpoint(
+    mode: str = "base",
+    *,
+    on_progress: Callable[[int, int], None] | None = None,
+) -> Path:
+    """
+    Ensure the checkpoint for *mode* is present (and MD5-ok).
+
+    Downloads with byte progress via *on_progress(bytes_done, bytes_total)*
+    when the file is missing or the MD5 does not match. *bytes_total* may be
+    0 if the server omits Content-Length.
+    """
+    meta = _load_mode_meta(mode)
+    cache = transparent_background_cache_dir()
+    dest = cache / meta["ckpt_name"]
+    expected_md5 = meta.get("md5")
+
+    if dest.is_file():
+        if expected_md5 is None or _file_md5(dest) == expected_md5:
+            return dest
+        dest.unlink(missing_ok=True)
+
+    url = meta["url"]
+    tmp = dest.with_suffix(dest.suffix + ".partial")
+    if tmp.exists():
+        tmp.unlink()
+
+    req = urllib.request.Request(
+        url,
+        headers={"User-Agent": "rm_bkg"},
+    )
+    last_pct = -1
+    with urllib.request.urlopen(req, timeout=120) as resp:
+        total = int(resp.headers.get("Content-Length") or 0)
+        done = 0
+        if on_progress is not None:
+            on_progress(0, total)
+            last_pct = 0
+        with tmp.open("wb") as out:
+            while True:
+                block = resp.read(256 * 1024)
+                if not block:
+                    break
+                out.write(block)
+                done += len(block)
+                if on_progress is None:
+                    continue
+                if total <= 0:
+                    on_progress(done, 0)
+                    continue
+                pct = int(done * 100 / total)
+                if pct != last_pct:
+                    last_pct = pct
+                    on_progress(done, total)
+
+    if expected_md5 is not None:
+        got = _file_md5(tmp)
+        if got != expected_md5:
+            tmp.unlink(missing_ok=True)
+            raise RuntimeError(
+                f"Checksum mismatch for {dest.name}: expected {expected_md5}, got {got}"
+            )
+
+    tmp.replace(dest)
+    if on_progress is not None and total > 0:
+        on_progress(total, total)
+    return dest
