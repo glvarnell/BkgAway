@@ -21,9 +21,11 @@ ComfyUI **Inspyrenet Rembg** node (`Remover()`, `process(..., type="rgba")`).
 
 ## Run (development)
 
-From repo root (parent of package `rm_bkg/`):
+From repo root (parent of package `rm_bkg/`). Prefer **Python 3.12** (see `.tool-versions`);
+do not create venvs with system 3.14+.
 
 ```bash
+asdf install   # if using asdf and 3.12.2 is missing
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements-cuda.txt   # or requirements-cpu.txt

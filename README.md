@@ -17,11 +17,14 @@ that file when redistributing frozen builds.
 
 ## Setup
 
-Create a virtual environment, then install **one** of the GPU/CPU requirement files.
+Use **Python 3.12** (pinned in [`.tool-versions`](.tool-versions) for [asdf](https://asdf-vm.com/)).
+Avoid 3.14+ for this stack; PyTorch / PySide6 / PyInstaller are more reliable on 3.12.
 
 ```bash
 cd /path/to/rm_bkg
-python3 -m venv .venv
+asdf install          # if needed: installs python 3.12.2 from .tool-versions
+python -V             # expect 3.12.2
+python -m venv .venv
 source .venv/bin/activate
 ```
 
