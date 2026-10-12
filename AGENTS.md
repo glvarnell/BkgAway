@@ -1,7 +1,6 @@
 # AGENTS.md — guidance for AI coding agents
 
-This repository is **BkgAway** (Python package **`rm_bkg`**): a **PySide6** desktop app that
-removes image backgrounds using
+This repository is **rm_bkg**: a **PySide6** desktop app that removes image backgrounds using
 [`transparent-background`](https://github.com/plemeri/transparent-background) (InSPyReNet), matching the
 ComfyUI **Inspyrenet Rembg** node (`Remover()`, `process(..., type="rgba")`).
 
@@ -36,8 +35,8 @@ Needs a display (Qt GUI). First inference may download weights into the app data
 
 ## Frozen builds (PyInstaller)
 
-- **CUDA:** → `./packaging/build_nvidia.sh` → `dist/bkgaway-cuda/bkgaway-cuda`
-- **CPU:** → `./packaging/build_cpu.sh` → `dist/bkgaway-cpu/bkgaway-cpu`
+- **CUDA:** → `./packaging/build_nvidia.sh` → `dist/rm-bkg-cuda/rm-bkg-cuda`
+- **CPU:** → `./packaging/build_cpu.sh` → `dist/rm-bkg-cpu/rm-bkg-cpu`
 - Specs: `packaging/rm_bkg_cuda.spec`, `packaging/rm_bkg_cpu.spec`
 
 Always use the **PyInstaller from the same venv as the torch build** you intend to ship.

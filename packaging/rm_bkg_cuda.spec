@@ -92,7 +92,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name="bkgaway-cuda",
+    name="rm-bkg-cuda",
     debug=False,
     bootloader_ignore_signals=False,
     strip=True,
@@ -112,5 +112,5 @@ coll = COLLECT(
     strip=True,
     upx=False,
     upx_exclude=[],
-    name="bkgaway-cuda",
+    name="rm-bkg-cuda",
 )

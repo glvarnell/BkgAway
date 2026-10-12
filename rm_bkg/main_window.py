@@ -38,7 +38,7 @@ from rm_bkg.remover_worker import RemoveBackgroundThread, SUPPORTED_SUFFIXES
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
-        self.setWindowTitle(f"BkgAway {__version__}")
+        self.setWindowTitle(f"rm_bkg {__version__}")
         self.resize(1100, 720)
 
         self._input_paths: list[Path] = []
@@ -167,7 +167,7 @@ class MainWindow(QMainWindow):
         lg.addWidget(self._log)
         layout.addWidget(log)
 
-        tabs.addTab(work, "Remove")
+        tabs.addTab(work, "Remove background")
         tabs.addTab(self._build_about_tab(), "About")
 
         sb = QStatusBar()
@@ -181,7 +181,7 @@ class MainWindow(QMainWindow):
         page = QWidget()
         layout = QVBoxLayout(page)
 
-        title = QLabel("BkgAway")
+        title = QLabel("rm_bkg")
         title_font = title.font()
         title_font.setPointSize(title_font.pointSize() + 4)
         title_font.setBold(True)
@@ -190,8 +190,8 @@ class MainWindow(QMainWindow):
 
         layout.addWidget(QLabel(f"Version {__version__}"))
         blurb = QLabel(
-            "BkgAway removes image backgrounds with transparent-background "
-            "(InSPyReNet), matching the ComfyUI Inspyrenet Rembg path.\n\n"
+            "Background removal with transparent-background (InSPyReNet), "
+            "matching the ComfyUI Inspyrenet Rembg path.\n\n"
             "Uses transparent-background, InSPyReNet, PySide6/Qt, PyTorch, "
             "Pillow, and NumPy. See Third-party notices for details."
         )

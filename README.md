@@ -1,11 +1,11 @@
-# BkgAway
+# rm_bkg
 
 Desktop app that removes image backgrounds. It mirrors the ComfyUI **Inspyrenet
 Rembg** path using
 [`transparent-background`](https://github.com/plemeri/transparent-background)
 (InSPyReNet) with `Remover()` and writes PNGs with an alpha channel.
 
-The Python package remains `rm_bkg` (`python -m rm_bkg`).
+Run with `python -m rm_bkg`.
 
 ## Acknowledgments
 
@@ -107,9 +107,9 @@ or
 PYINSTALLER=.venv/bin/pyinstaller ./packaging/build_nvidia.sh
 ```
 
-**Run the app:** `./dist/bkgaway-cuda/bkgaway-cuda`
+**Run the app:** `./dist/rm-bkg-cuda/rm-bkg-cuda`
 
-**Ship:** zip or tarball the whole `dist/bkgaway-cuda/` directory.
+**Ship:** zip or tarball the whole `dist/rm-bkg-cuda/` directory.
 
 **Target machine:** needs a **compatible NVIDIA driver** for the CUDA version
 bundled with your PyTorch wheel, and roughly compatible **glibc** (build on an
@@ -125,7 +125,7 @@ frozen app fails with a missing module, add it to `hiddenimports` or extend
 
 Same **onedir** layout as the CUDA build, but use **CPU PyTorch** from
 `requirements-cpu.txt` so the bundle does **not** ship the NVIDIA CUDA stack
-(smaller than `bkgaway-cuda`, still large because of Qt + torch CPU + vision deps).
+(smaller than `rm-bkg-cuda`, still large because of Qt + torch CPU + vision deps).
 
 ```bash
 cd /path/to/rm_bkg
@@ -137,9 +137,9 @@ pip install -r packaging/requirements-build-cpu.txt
 ./packaging/build_cpu.sh
 ```
 
-**Run the app:** `./dist/bkgaway-cpu/bkgaway-cpu`
+**Run the app:** `./dist/rm-bkg-cpu/rm-bkg-cpu`
 
-**Ship:** the whole `dist/bkgaway-cpu/` directory (including `_internal/`).
+**Ship:** the whole `dist/rm-bkg-cpu/` directory (including `_internal/`).
 
 Spec: [`packaging/rm_bkg_cpu.spec`](packaging/rm_bkg_cpu.spec).
 

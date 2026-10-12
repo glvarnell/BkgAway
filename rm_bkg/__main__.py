@@ -13,9 +13,9 @@ from rm_bkg.paths import ensure_transparent_background_home
 
 def main() -> None:
     app = QApplication(sys.argv)
-    app.setApplicationName("BkgAway")
+    app.setApplicationName("rm_bkg")
     app.setApplicationVersion(__version__)
-    app.setOrganizationName("BkgAway")
+    app.setOrganizationName("rm_bkg")
     ensure_transparent_background_home()
     w = MainWindow()
     w.show()

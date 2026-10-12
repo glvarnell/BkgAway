@@ -66,7 +66,7 @@ def weights_parent_directory() -> Path:
     except ImportError:
         pass
 
-    return (Path.home() / ".bkgaway").resolve()
+    return (Path.home() / ".rm_bkg").resolve()
 
 
 def transparent_background_cache_dir() -> Path:
@@ -82,7 +82,7 @@ def transparent_background_cache_dir() -> Path:
 def ensure_transparent_background_home() -> Path:
     """
     If unset, set `TRANSPARENT_BACKGROUND_FILE_PATH` to a stable per-user directory
-    (Qt AppData when a QApplication exists, else ~/.bkgaway).
+    (Qt AppData when a QApplication exists, else ~/.rm_bkg).
     """
     existing = os.environ.get("TRANSPARENT_BACKGROUND_FILE_PATH", "").strip()
     if existing:

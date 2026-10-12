@@ -95,7 +95,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name="bkgaway-cpu",
+    name="rm-bkg-cpu",
     debug=False,
     bootloader_ignore_signals=False,
     strip=True,
@@ -115,5 +115,5 @@ coll = COLLECT(
     strip=True,
     upx=False,
     upx_exclude=[],
-    name="bkgaway-cpu",
+    name="rm-bkg-cpu",
 )

@@ -1,9 +1,9 @@
 # Third-party notices
 
-**BkgAway** (Python package `rm_bkg`) depends on open-source projects. This file
-summarizes attribution for redistributors. Upstream license texts remain
-authoritative; when shipping PyInstaller builds, include this file with the
-bundle and retain any license files already collected under `_internal/`.
+**rm_bkg** depends on open-source projects. This file summarizes attribution for
+redistributors. Upstream license texts remain authoritative; when shipping
+PyInstaller builds, include this file with the bundle and retain any license
+files already collected under `_internal/`.
 
 ## Core background-removal stack
 
@@ -74,4 +74,4 @@ notice is required for that behavioral compatibility alone.
 
 ## This project
 
-See the repository `LICENSE` (when present) for terms covering BkgAway / `rm_bkg` itself.
+See the repository `LICENSE` (when present) for terms covering `rm_bkg` itself.
