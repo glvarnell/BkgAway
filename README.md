@@ -1,8 +1,19 @@
-# Remove background (Qt)
+# BkgAway
 
-Small desktop app that mirrors the ComfyUI **Inspyrenet Rembg** path: it uses
+Desktop app that removes image backgrounds. It mirrors the ComfyUI **Inspyrenet
+Rembg** path using
 [`transparent-background`](https://github.com/plemeri/transparent-background)
 (InSPyReNet) with `Remover()` and writes PNGs with an alpha channel.
+
+The Python package remains `rm_bkg` (`python -m rm_bkg`).
+
+## Acknowledgments
+
+Built on open-source components including **transparent-background**,
+**InSPyReNet**, **PySide6/Qt**, **PyTorch**, **Pillow**, and **NumPy**. See
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) for attribution and license
+pointers (also shown under **About → Third-party notices** in the app). Include
+that file when redistributing frozen builds.
 
 ## Setup
 
@@ -40,8 +51,17 @@ pip install -r requirements-rocm.txt
 `requirements-rocm.txt` only pulls the UI + `transparent-background` stack so
 you do not accidentally overwrite ROCm torch with a CUDA wheel from PyPI.
 
-On first run, `transparent-background` may download model weights into
-`~/.transparent-background/`.
+On first run, `transparent-background` downloads model weights once into a
+stable cache directory (see below). The app shows **Model cache:** in Options;
+use **Re-download weights…** to clear that cache and fetch again on the next Run.
+
+**Cache location:** before Run, the app sets `TRANSPARENT_BACKGROUND_FILE_PATH`
+when it is unset so checkpoints live under the Qt **application data** directory
+for this app (not necessarily `$HOME`). Override the parent directory with
+`RM_BKG_WEIGHTS_ROOT` (the `.transparent-background` folder is created inside
+it). If you already have weights under `~/.transparent-background/`, either
+set `RM_BKG_WEIGHTS_ROOT` to your home directory or copy that folder into the
+path shown in the UI.
 
 ## Run
 
@@ -87,14 +107,15 @@ or
 PYINSTALLER=.venv/bin/pyinstaller ./packaging/build_nvidia.sh
 ```
 
-**Run the app:** `./dist/rm-bkg-cuda/rm-bkg-cuda`
+**Run the app:** `./dist/bkgaway-cuda/bkgaway-cuda`
 
-**Ship:** zip or tarball the whole `dist/rm-bkg-cuda/` directory.
+**Ship:** zip or tarball the whole `dist/bkgaway-cuda/` directory.
 
 **Target machine:** needs a **compatible NVIDIA driver** for the CUDA version
 bundled with your PyTorch wheel, and roughly compatible **glibc** (build on an
 older distro if you need broader compatibility). First run still downloads
-model weights to `~/.transparent-background/` unless you ship that cache.
+model weights into the app’s cache directory unless you ship that cache (or set
+`RM_BKG_WEIGHTS_ROOT` / `TRANSPARENT_BACKGROUND_FILE_PATH` to a pre-populated tree).
 
 Spec file: [`packaging/rm_bkg_cuda.spec`](packaging/rm_bkg_cuda.spec). If the
 frozen app fails with a missing module, add it to `hiddenimports` or extend
@@ -104,7 +125,7 @@ frozen app fails with a missing module, add it to `hiddenimports` or extend
 
 Same **onedir** layout as the CUDA build, but use **CPU PyTorch** from
 `requirements-cpu.txt` so the bundle does **not** ship the NVIDIA CUDA stack
-(smaller than `rm-bkg-cuda`, still large because of Qt + torch CPU + vision deps).
+(smaller than `bkgaway-cuda`, still large because of Qt + torch CPU + vision deps).
 
 ```bash
 cd /path/to/rm_bkg
@@ -116,9 +137,9 @@ pip install -r packaging/requirements-build-cpu.txt
 ./packaging/build_cpu.sh
 ```
 
-**Run the app:** `./dist/rm-bkg-cpu/rm-bkg-cpu`
+**Run the app:** `./dist/bkgaway-cpu/bkgaway-cpu`
 
-**Ship:** the whole `dist/rm-bkg-cpu/` directory (including `_internal/`).
+**Ship:** the whole `dist/bkgaway-cpu/` directory (including `_internal/`).
 
 Spec: [`packaging/rm_bkg_cpu.spec`](packaging/rm_bkg_cpu.spec).
 

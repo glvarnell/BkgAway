@@ -49,6 +49,9 @@ class RemoveBackgroundThread(QThread):
 
     def run(self) -> None:
         os.environ.setdefault("TQDM_DISABLE", "1")
+        from rm_bkg.paths import ensure_transparent_background_home
+
+        ensure_transparent_background_home()
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         try:

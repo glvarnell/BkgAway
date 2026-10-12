@@ -6,13 +6,17 @@ import sys
 
 from PySide6.QtWidgets import QApplication
 
+from rm_bkg import __version__
 from rm_bkg.main_window import MainWindow
+from rm_bkg.paths import ensure_transparent_background_home
 
 
 def main() -> None:
     app = QApplication(sys.argv)
-    app.setApplicationName("Remove background")
-    app.setOrganizationName("rm_bkg")
+    app.setApplicationName("BkgAway")
+    app.setApplicationVersion(__version__)
+    app.setOrganizationName("BkgAway")
+    ensure_transparent_background_home()
     w = MainWindow()
     w.show()
     raise SystemExit(app.exec())
